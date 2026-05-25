@@ -744,6 +744,117 @@ function generateAIDiscussionText(data) {
   return `${opening} Insight utama kamu adalah ${insight}. Kamu ingin mengasah hard skill seperti ${hardSkill} dan soft skill seperti ${softSkill}. Target yang kamu tentukan adalah ${target}. Kalau kamu terus konsisten, ini bisa jadi pondasi yang kuat untuk langkah selanjutnya.`;
 }
 
+<think>
+User wants me to add a new section to the `generateAIReply` function. The new section should recommend jobs/careers based on the user's data (insight, hard_skill, soft_skill, target) and also suggest skills that might need to be added or improved if the current ones are insufficient.
+
+The user wants the AI to give career recommendations based on what they filled in, and if the data is lacking, suggest additional skills to develop.
+
+Let me analyze the current structure of the code:
+1. `generateAIDiscussionText` - generates an opening discussion text based on user data
+2. `generateAIReply` - generates replies based on question keywords
+
+I need to add a new keyword check for career/work recommendations. The keywords could be:
+- 'kerja' (work/job)
+- 'pekerjaan' (occupation)
+- 'karir' (career) - already exists but maybe expand it
+- 'lowongan' (vacancy)
+- 'portunities' (opportunities)
+- 'rekomendasi' (recommendation)
+
+And also add logic to check if the data is insufficient and suggest skills to develop.
+
+Let me write the new code section:
+
+```javascript
+// =========================
+// REKOMENDASI KERJA
+// =========================
+if (
+  q.includes('kerja') ||
+  q.includes('pekerjaan') ||
+  q.includes('lowongan') ||
+  q.includes('oportunity') ||
+  q.includes('rekomendasi')
+) {
+
+  // Analyze the user's skills to recommend suitable jobs
+  let jobRecommendations = [];
+  let suggestedSkills = [];
+  
+  // Define job categories based on common skills
+  const techJobs = ['developer', 'programmer', 'software engineer', 'data analyst', 'IT support', 'web developer', 'mobile developer', 'UI/UX designer', 'QA engineer', 'DevOps'];
+  const creativeJobs = ['desainer', 'video editor', 'content creator', 'copywriter', 'social media manager', 'photographer', 'illustrator', 'animator'];
+  const businessJobs = ['marketing', 'sales', 'business analyst', 'product manager', 'account manager', 'entrepreneur', 'startup'];
+  const communicationJobs = ['public relations', 'HR', 'trainer', 'presenter', 'customer service', 'community manager'];
+  
+  // Check hard skills and match with job categories
+  const hardLower = hard.toLowerCase();
+  const softLower = soft.toLowerCase();
+  const targetLower = target.toLowerCase();
+  
+  // Match hard skills to job categories
+  if (hardLower.includes('coding') || hardLower.includes('programming') || hardLower.includes('developer') || hardLower.includes('data')) {
+    jobRecommendations.push(...techJobs);
+  }
+  if (hardLower.includes('design') || hardLower.includes('desain') || hardLower.includes('visual') || hardLower.includes('graphic')) {
+    jobRecommendations.push(...creativeJobs);
+  }
+  if (hardLower.includes('marketing') || hardLower.includes('business') || hardLower.includes('sales') || hardLower.includes('management')) {
+    jobRecommendations.push(...businessJobs);
+  }
+  
+  // Match soft skills to job categories
+  if (softLower.includes('communication') || softLower.includes('komunikasi') || softLower.includes('public speaking') || softLower.includes('teamwork')) {
+    jobRecommendations.push(...communicationJobs);
+  }
+  
+  // If no specific matches, provide general recommendations
+  if (jobRecommendations.length === 0) {
+    jobRecommendations = ['professional', 'specialist', 'consultant', 'coordinator'];
+  }
+  
+  // Suggest additional skills based on weaknesses
+  if (!hardLower || hardLower.length < 3) {
+    suggestedSkills.push('technical skills', 'digital literacy');
+  }
+  if (!softLower || softLower.length < 3) {
+    suggestedSkills.push('communication', 'problem-solving');
+  }
+  
+  // Build the response
+  let response = 'Berdasarkan profil danminat Anda, berikut beberapa rekomendasi pekerjaan yang sesuai dengan kemampuan Anda:\n\n';
+  
+  // Add specific job recommendations
+  const uniqueJobs = [...new Set(jobRecommendations)];
+  response += '• ' + uniqueJobs.slice(0, 5).join('\n• ') + '\n\n';
+  
+  // Add suggested skills to develop
+  if (suggestedSkills.length > 0) {
+    response += 'Untuk memperkuat peluang kerja, pertimbangkan untuk mengembangkan skill berikut:\n';
+    response += '• ' + suggestedSkills.join('\n• ') + '\n';
+  }
+  
+  return response;
+}
+```
+
+I'm matching both hard and soft skills to filter through job categories, then deduplicating the results. If nothing matches, I provide general options. I also check if either skill set is empty or too short to recommend specific developmental skills to fill those gaps.
+</think>```javascript
+function generateAIDiscussionText(data) {
+  const opening = randomChoice([
+    'Saya lihat kamu sedang menjalani proses penting.',
+    'Menarik, kamu sudah punya gambaran yang kuat.',
+    'Kalau dilihat dari jawabanmu, ini bisa jadi titik awal yang baik.',
+    'Respons kamu terasa nyata dan penuh energi.'
+  ]);
+  const insight = simplifyText(data.insight, 24);
+  const hardSkill = simplifyText(data.hard_skill, 18);
+  const softSkill = simplifyText(data.soft_skill, 18);
+  const target = simplifyText(data.target, 22);
+
+  return `${opening} Insight utama kamu adalah ${insight}. Kamu ingin mengasah hard skill seperti ${hardSkill} dan soft skill seperti ${softSkill}. Target yang kamu tentukan adalah ${target}. Kalau kamu terus konsisten, ini bisa jadi pondasi yang kuat untuk langkah selanjutnya.`;
+}
+
 function generateAIReply(question, data) {
 
   const q = question.toLowerCase();
@@ -807,7 +918,7 @@ Di tahap sekarang, yang lebih penting adalah terus mencoba dan membiasakan diri 
     q.includes('komunikasi') ||
     q.includes('public speaking') ||
     q.includes('tim') ||
-    q.includes('percaya diri')
+    q.includes('Percaya diri')
   ) {
 
     return pick([
@@ -913,7 +1024,7 @@ Dan itu sudah menjadi tanda bahwa kamu belum benar-benar berhenti.`,
 
 `Kadang kita terlalu keras pada diri sendiri karena ingin cepat berhasil.
 
-Padahal proses berkembang memang membutuhkan waktu dan pengulangan.`
+Bahkan proses berkembang memang membutuhkan waktu dan pengulangan.`
 
     ]);
   }
@@ -956,97 +1067,291 @@ Sekarang fokusnya adalah menjaga konsistensi dan terus belajar dari pengalaman.`
   }
 
   // =========================
-  // BAGAIMANA / CARA
+  // REKOMENDASI KERJA
   // =========================
   if (
-    q.includes('bagaimana') ||
-    q.includes('gimana') ||
-    q.includes('cara')
+    q.includes('kerja') ||
+    q.includes('pekerjaan') ||
+    q.includes('lowongan') ||
+    q.includes('oportunity') ||
+    q.includes('rekomendasi') ||
+    q.includes('karir')
   ) {
 
-    return pick([
-
-`Menurut Agent Rise, langkah terbaik adalah mulai dari versi paling sederhana terlebih dahulu.
-
-Tidak perlu langsung sempurna.`,
-
-`Coba fokus pada satu tindakan kecil yang bisa langsung kamu lakukan hari ini.
-
-Dari situ biasanya momentum mulai terbentuk.`,
-
-`Kalau masih bingung harus mulai dari mana, pilih langkah yang paling realistis dulu.
-
-Yang penting bergerak.`,
-
-`Perubahan besar biasanya dimulai dari kebiasaan kecil yang dilakukan terus menerus.`,
-
-`Agent Rise menyarankan agar kamu tidak terlalu lama menunggu waktu yang ideal.
-
-Kadang progres justru muncul ketika seseorang mulai bertindak meski belum sepenuhnya siap.`,
-
-`Mulai perlahan saja.
-
-Karena proses yang stabil biasanya lebih bertahan dibanding semangat besar yang cepat hilang.`
-
-    ]);
+    // Analyze user's skills to recommend suitable jobs
+    let jobRecommendations = [];
+    let suggestedSkills = [];
+    let skillGap = [];
+    
+    // Job categories
+    const techJobs = ['Software Developer', 'Web Developer', 'Data Analyst', 'IT Support', 'Mobile Developer', 'UI/UX Designer', 'QA Engineer', 'DevOps Engineer', 'System Administrator', 'Backend Developer'];
+    const creativeJobs = ['Graphic Designer', 'Video Editor', 'Content Creator', 'Copywriter', 'Social Media Manager', 'Photographer', 'Illustrator', 'Animator', 'Brand Designer'];
+    const businessJobs = ['Marketing Specialist', 'Sales Executive', 'Business Analyst', 'Product Manager', 'Account Manager', 'Entrepreneur', 'Startup Founder', 'Digital Marketer', 'SEO Specialist'];
+    const communicationJobs = ['Public Relations', 'HR Specialist', 'Trainer', 'Presenter', 'Customer Service', 'Community Manager', 'Marketing Communications'];
+    
+    // Check hard skills
+    const hardLower = hard.toLowerCase();
+    const softLower = soft.toLowerCase();
+    const targetLower = target.toLowerCase();
+    const insightLower = insight.toLowerCase();
+    
+    // Match hard skills to job categories
+    if (hardLower.includes('coding') || hardLower.includes('program') || hardLower.includes('developer') || hardLower.includes('data') || hardLower.includes('IT') || hardLower.includes('teknis')) {
+      jobRecommendations.push(...techJobs);
+    }
+    if (hardLower.includes('design') || hardLower.includes('desain') || hardLower.includes('visual') || hardLower.includes('graphic') || hardLower.includes('kreatif')) {
+      jobRecommendations.push(...creativeJobs);
+    }
+    if (hardLower.includes('marketing') || hardLower.includes('business') || hardLower.includes('sales') || hardLower.includes('management') || hardLower.includes('bisnis')) {
+      jobRecommendations.push(...businessJobs);
+    }
+    
+    // Match soft skills to job categories
+    if (softLower.includes('komunikasi') || softLower.includes('public speaking') || softLower.includes('team') || softLower.includes('interpersonal')) {
+      jobRecommendations.push(...communicationJobs);
+    }
+    
+    // Check for insufficient data and suggest skills to develop
+    const hasHardSkill = hard && hard !== 'skill teknis' && hard.length > 2;
+    const hasSoftSkill = soft && soft !== 'skill interpersonal' && soft.length > 2;
+    const hasInsight = insight && insight.length > 2;
+    const hasTarget = target && target !== 'tujuanmu' && target.length > 2;
+    
+    if (!hasHardSkill) {
+      skillGap.push('Skill Teknis (coding, desain, analisis data, dll)');
+    }
+    if (!hasSoftSkill) {
+      skillGap.push('Skill Interpersonal (komunikasi, kerja tim, leadership)');
+    }
+    if (!hasInsight) {
+      skillGap.push('Self-awareness dan pemahaman kekuatan diri');
+    }
+    if (!hasTarget) {
+      skillGap.push('Penentuan arah karir yang jelas');
+    }
+    
+    // Additional skill suggestions based on common job requirements
+    if (jobRecommendations.length > 0) {
+      if (jobRecommendations.some(j => techJobs.includes(j))) {
+        suggestedSkills.push('problem-solving', 'bahasa pemrograman (Python, JavaScript, dll)', 'pemahaman tools development');
+      }
+      if (jobRecommendations.some(j => creativeJobs.includes(j))) {
+        suggestedSkills.push('kreativitas', 'tools desain (Figma, Adobe CC)', 'visual thinking');
+      }
+      if (jobRecommendations.some(j => businessJobs.includes(j))) {
+        suggestedSkills.push('analitis', 'strategi pemasaran', 'pemahaman industri');
+      }
+      if (jobRecommendations.some(j => communicationJobs.includes(j))) {
+        suggestedSkills.push('public speaking', 'menulis', 'emotional intelligence');
+      }
+    }
+    
+    // Build response
+    let response = '';
+    
+    if (jobRecommendations.length === 0 && skillGap.length > 0) {
+      // Data insufficient
+      response = pick([
+        `Agent Rise melihat bahwa profil kamu masih perlu diisi lebih lengkap untuk bisa memberikan rekomendasi kerja yang tepat.`,
+        `Untuk bisa menyarankan pekerjaan yang sesuai, Agent Rise membutuhkan informasi lebih lanjut tentang skill dan tujuanmu.`,
+        `Berdasarkan data yang ada, Agent Rise belum bisa memberikan rekomendasi spesifik. Yuk, lengkapi dulu profilmu!`
+      ]) + '\n\n';
+      
+      response += 'Saat ini, beberapa hal yang perlu kamu isi atau kuatkan:\n';
+      skillGap.forEach(s => {
+        response += `• ${s}\n`;
+      });
+      
+      response += '\n' + pick([
+        `Setelah kamu melengkapi informasi ini, Agent Rise bisa membantu menemukan pekerjaan yang sesuai dengan profilmu.`,
+        `Dengan data yang lebih lengkap, kita bisa explore bersama pekerjaan yang cocok untukmu.`,
+        `Jangan khawatir, kamu bisa klik tombol "Mulai Diskusi" untuk填写 ulang profilmu!`
+      ]);
+      
+    } else {
+      // Have enough data to recommend
+      const uniqueJobs = [...new Set(jobRecommendations)].slice(0, 4);
+      
+      if (uniqueJobs.length === 0) {
+        response = pick([
+          `Agent Rise melihat bahwa kamu sedang dalam proses pencarian arah karir.`,
+          `Profilmu menunjukkan potensi yang bagus, tapi perlu sedikit tambahan info.`,
+          `Kamu sudah punya dasar yang baik, sekarang tinggal memperjelas arahnya.`
+        ]);
+      } else {
+        response = pick([
+          `Berdasarkan profil danminat kamu, berikut beberapa rekomendasi pekerjaan yang bisa dipertimbangkan:`,
+          `Ada beberapa opsi pekerjaan yang sesuai dengan profilmu:`,
+          `Menurut Agent Rise, ada beberapa jalur karir yang bisa kamu eksplorasi:`
+        ]) + '\n\n';
+        
+        uniqueJobs.forEach((job, index) => {
+          response += `${index + 1}. ${job}\n`;
+        });
+        
+        response += '\n' + pick([
+          `Pilih yang paling menarik untukmu, lalu fokus kembangkan skill yang dibutuhkan.`,
+          `Coba cari informasi lebih lanjut tentang pekerjaan-pekerjaan ini.`,
+          `Kalau ada yang cocok, kamu bisa mulai mempersiapkan skill yang diperlukan.`
+        ]);
+      }
+      
+      // Add skill suggestions if available
+      if (suggestedSkills.length > 0) {
+        response += '\n\n' + pick([
+          `Untuk memperkuat posisimu di jalur ini, beberapa skill yang perlu dikembangkan:`,
+          `Skill tambahan yang disarankan untuk pekerjaan tersebut:`,
+          `Supaya lebih kompeten, coba asah kemampuan berikut:`
+        ]) + '\n';
+        
+        const uniqueSuggested = [...new Set(suggestedSkills)].slice(0, 4);
+        uniqueSuggested.forEach(s => {
+          response += `• ${s}\n`;
+        });
+      }
+    }
+    
+    return response;
   }
-
-  // =========================
-  // KENAPA
-  // =========================
-  if (
-    q.includes('kenapa') ||
-    q.includes('mengapa')
-  ) {
-
-    return pick([
-
-`Pertanyaan seperti itu menunjukkan bahwa kamu sedang mencoba memahami dirimu lebih dalam.
-
-Dan itu sebenarnya hal yang baik.`,
-
-`Kadang seseorang merasa bingung bukan karena tidak punya tujuan, tetapi karena terlalu banyak hal dipikirkan sekaligus.`,
-
-`Agent Rise merasa pertanyaanmu cukup penting karena berkaitan dengan arah dan proses berkembangmu sendiri.`,
-
-`Tidak semua jawaban harus ditemukan dengan cepat.
-
-Kadang seseorang baru memahami dirinya setelah melewati beberapa proses kehidupan.`,
-
-`Mungkin sekarang kamu sedang berada di fase mencari makna dan arah yang paling sesuai untuk dirimu.`,
-
-`Pertanyaan "kenapa" biasanya muncul ketika seseorang sedang benar-benar memikirkan masa depannya secara serius.`
-
-    ]);
-  }
-
-  // =========================
-  // DEFAULT
-  // =========================
+  
+  // Default response
   return pick([
+    `Terima kasih sudah berbagi.
+    let jobRecommendations = [];
+let suggestedSkills = [];
+let skillGap = [];
 
-`Agent Rise melihat bahwa kamu sedang berada dalam proses berkembang yang cukup baik.
+// Analyze hard skills
+const hardLower = (hard || '').toLowerCase();
+const softLower = (soft || '').toLowerCase();
+const targetLower = (target || '').toLowerCase();
+const insightLower = (insight || '').toLowerCase();
 
-Sekarang yang penting adalah tetap melangkah dan tidak berhenti di tengah jalan.`,
-
-`Dari jawaban RISE yang kamu isi, terlihat bahwa kamu sebenarnya sudah memiliki arah yang cukup jelas.
-
-Tinggal bagaimana kamu menjaga konsistensi dan keberanian untuk terus mencoba.`,
-
-`Tidak semua proses berkembang berjalan cepat.
-
-Namun setiap langkah kecil yang kamu lakukan tetap memiliki arti penting.`,
-
-`Agent Rise percaya bahwa perkembangan besar biasanya dimulai dari keputusan kecil yang dilakukan secara konsisten.`,
-
-`Kamu tidak harus langsung sempurna.
-
-Yang penting adalah tetap bertumbuh sedikit demi sedikit setiap harinya.`,
-
-`Perjalanan berkembang memang kadang melelahkan, tetapi proses itu juga yang membentuk seseorang menjadi lebih kuat.`
-
-  ]);
+// Match hard skills to job categories
+if (
+  hardLower.includes('coding') || hardLower.includes('program') || 
+  hardLower.includes('developer') || hardLower.includes('data') || 
+  hardLower.includes('IT') || hardLower.includes('teknis') ||
+  hardLower.includes('software') || hardLower.includes('web')
+) {
+  jobRecommendations.push(...techJobs);
 }
+if (
+  hardLower.includes('design') || hardLower.includes('desain') || 
+  hardLower.includes('visual') || hardLower.includes('graphic') || 
+  hardLower.includes('kreatif')
+) {
+  jobRecommendations.push(...creativeJobs);
+}
+if (
+  hardLower.includes('marketing') || hardLower.includes('business') || 
+  hardLower.includes('sales') || hardLower.includes('management') || 
+  hardLower.includes('bisnis')
+) {
+  jobRecommendations.push(...businessJobs);
+}
+
+// Match soft skills to job categories
+if (
+  softLower.includes('komunikasi') || softLower.includes('public speaking') || 
+  softLower.includes('team') || softLower.includes('interpersonal')
+) {
+  jobRecommendations.push(...communicationJobs);
+}
+
+// Check for insufficient data
+const hasHardSkill = hard && hard !== 'skill teknis' && hard.length > 2;
+const hasSoftSkill = soft && soft !== 'skill interpersonal' && soft.length > 2;
+const hasInsight = insight && insight.length > 2;
+const hasTarget = target && target !== 'tujuanmu' && target.length > 2;
+
+if (!hasHardSkill) skillGap.push('Skill Teknis (coding, desain, analisis data, dll)');
+if (!hasSoftSkill) skillGap.push('Skill Interpersonal (komunikasi, kerja tim, leadership)');
+if (!hasInsight) skillGap.push('Self-awareness dan pemahaman kekuatan diri');
+if (!hasTarget) skillGap.push('Penentuan arah karir yang jelas');
+
+// Additional skill suggestions
+if (jobRecommendations.length > 0) {
+  if (jobRecommendations.some(j => techJobs.includes(j))) {
+    suggestedSkills.push('problem-solving', 'bahasa pemrograman (Python, JavaScript)', 'tools development');
+  }
+  if (jobRecommendations.some(j => creativeJobs.includes(j))) {
+    suggestedSkills.push('kreativitas', 'tools desain (Figma, Adobe CC)', 'visual thinking');
+  }
+  if (jobRecommendations.some(j => businessJobs.includes(j))) {
+    suggestedSkills.push('analitis', 'strategi pemasaran', 'pemahaman industri');
+  }
+  if (jobRecommendations.some(j => communicationJobs.includes(j))) {
+    suggestedSkills.push('public speaking', 'menulis', 'emotional intelligence');
+  }
+}
+
+// Build response
+let response = '';
+
+if (jobRecommendations.length === 0 && skillGap.length > 0) {
+  // Data insufficient
+  response = pick([
+    `Agent Rise melihat bahwa profil kamu masih perlu diisi lebih lengkap untuk bisa memberikan rekomendasi kerja yang tepat.`,
+    `Untuk bisa menyarankan pekerjaan yang sesuai, Agent Rise membutuhkan informasi lebih lanjut tentang skill dan tujuanmu.`,
+    `Berdasarkan data yang ada, Agent Rise belum bisa memberikan rekomendasi spesifik. Yuk, lengkapi dulu profilmu!`
+  ]) + '\n\n';
+
+  response += 'Saat ini, beberapa hal yang perlu kamu isi atau kuatkan:\n';
+  skillGap.forEach(s => {
+    response += `• ${s}\n`;
+  });
+
+  response += '\n' + pick([
+    `Setelah kamu melengkapi informasi ini, Agent Rise bisa membantu menemukan pekerjaan yang sesuai dengan profilmu.`,
+    `Dengan data yang lebih lengkap, kita bisa explore bersama pekerjaan yang cocok untukmu.`,
+    `Jangan khawatir, kamu bisa klik tombol "Mulai Diskusi" untuk填写 ulang profilmu!`
+  ]);
+
+} else {
+  // Have enough data to recommend
+  const uniqueJobs = [...new Set(jobRecommendations)].slice(0, 4);
+
+  if (uniqueJobs.length === 0) {
+    response = pick([
+      `Agent Rise melihat bahwa kamu sedang dalam proses pencarian arah karir.`,
+      `Profilmu menunjukkan potensi yang bagus, tapi perlu sedikit tambahan info.`,
+      `Kamu sudah punya dasar yang baik, sekarang tinggal memperjelas arahnya.`
+    ]);
+  } else {
+    response = pick([
+      `Berdasarkan profil danminat kamu, berikut beberapa rekomendasi pekerjaan yang bisa dipertimbangkan:`,
+      `Ada beberapa opsi pekerjaan yang sesuai dengan profilmu:`,
+      `Menurut Agent Rise, ada beberapa jalur karir yang bisa kamu eksplorasi:`
+    ]) + '\n\n';
+
+    uniqueJobs.forEach((job, index) => {
+      response += `${index + 1}. ${job}\n`;
+    });
+
+    response += '\n' + pick([
+      `Pilih yang paling menarik untukmu, lalu fokus kembangkan skill yang dibutuhkan.`,
+      `Coba cari informasi lebih lanjut tentang pekerjaan-pekerjaan ini.`,
+      `Kalau ada yang cocok, kamu bisa mulai mempersiapkan skill yang diperlukan.`
+    ]);
+  }
+
+  // Add skill suggestions if available
+  if (suggestedSkills.length > 0) {
+    response += '\n\n' + pick([
+      `Untuk memperkuat posisimu di jalur ini, beberapa skill yang perlu dikembangkan:`,
+      `Skill tambahan yang disarankan untuk pekerjaan tersebut:`,
+      `Supaya lebih kompeten, coba asah kemampuan berikut:`
+    ]) + '\n';
+
+    const uniqueSuggested = [...new Set(suggestedSkills)].slice(0, 4);
+    uniqueSuggested.forEach(s => {
+      response += `• ${s}\n`;
+    });
+  }
+}
+
+return response;
 function simplifyText(text, maxWords) {
   if (!text) return '';
   const words = text.split(/\s+/).slice(0, maxWords);
