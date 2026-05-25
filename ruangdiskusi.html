@@ -145,7 +145,7 @@
       allData.reverse().forEach((data, index) => {
         const card = document.createElement('div');
         card.className = 'card-glass rounded-2xl p-6 card-hover fade-in';
-        card.style.animationDelay = `${index * 0.1}s`;
+        card.style.animationDelay = `${index * 0.1}s`;n
         
         card.innerHTML = `
           <!-- Header -->
@@ -744,117 +744,6 @@ function generateAIDiscussionText(data) {
   return `${opening} Insight utama kamu adalah ${insight}. Kamu ingin mengasah hard skill seperti ${hardSkill} dan soft skill seperti ${softSkill}. Target yang kamu tentukan adalah ${target}. Kalau kamu terus konsisten, ini bisa jadi pondasi yang kuat untuk langkah selanjutnya.`;
 }
 
-<think>
-User wants me to add a new section to the `generateAIReply` function. The new section should recommend jobs/careers based on the user's data (insight, hard_skill, soft_skill, target) and also suggest skills that might need to be added or improved if the current ones are insufficient.
-
-The user wants the AI to give career recommendations based on what they filled in, and if the data is lacking, suggest additional skills to develop.
-
-Let me analyze the current structure of the code:
-1. `generateAIDiscussionText` - generates an opening discussion text based on user data
-2. `generateAIReply` - generates replies based on question keywords
-
-I need to add a new keyword check for career/work recommendations. The keywords could be:
-- 'kerja' (work/job)
-- 'pekerjaan' (occupation)
-- 'karir' (career) - already exists but maybe expand it
-- 'lowongan' (vacancy)
-- 'portunities' (opportunities)
-- 'rekomendasi' (recommendation)
-
-And also add logic to check if the data is insufficient and suggest skills to develop.
-
-Let me write the new code section:
-
-```javascript
-// =========================
-// REKOMENDASI KERJA
-// =========================
-if (
-  q.includes('kerja') ||
-  q.includes('pekerjaan') ||
-  q.includes('lowongan') ||
-  q.includes('oportunity') ||
-  q.includes('rekomendasi')
-) {
-
-  // Analyze the user's skills to recommend suitable jobs
-  let jobRecommendations = [];
-  let suggestedSkills = [];
-  
-  // Define job categories based on common skills
-  const techJobs = ['developer', 'programmer', 'software engineer', 'data analyst', 'IT support', 'web developer', 'mobile developer', 'UI/UX designer', 'QA engineer', 'DevOps'];
-  const creativeJobs = ['desainer', 'video editor', 'content creator', 'copywriter', 'social media manager', 'photographer', 'illustrator', 'animator'];
-  const businessJobs = ['marketing', 'sales', 'business analyst', 'product manager', 'account manager', 'entrepreneur', 'startup'];
-  const communicationJobs = ['public relations', 'HR', 'trainer', 'presenter', 'customer service', 'community manager'];
-  
-  // Check hard skills and match with job categories
-  const hardLower = hard.toLowerCase();
-  const softLower = soft.toLowerCase();
-  const targetLower = target.toLowerCase();
-  
-  // Match hard skills to job categories
-  if (hardLower.includes('coding') || hardLower.includes('programming') || hardLower.includes('developer') || hardLower.includes('data')) {
-    jobRecommendations.push(...techJobs);
-  }
-  if (hardLower.includes('design') || hardLower.includes('desain') || hardLower.includes('visual') || hardLower.includes('graphic')) {
-    jobRecommendations.push(...creativeJobs);
-  }
-  if (hardLower.includes('marketing') || hardLower.includes('business') || hardLower.includes('sales') || hardLower.includes('management')) {
-    jobRecommendations.push(...businessJobs);
-  }
-  
-  // Match soft skills to job categories
-  if (softLower.includes('communication') || softLower.includes('komunikasi') || softLower.includes('public speaking') || softLower.includes('teamwork')) {
-    jobRecommendations.push(...communicationJobs);
-  }
-  
-  // If no specific matches, provide general recommendations
-  if (jobRecommendations.length === 0) {
-    jobRecommendations = ['professional', 'specialist', 'consultant', 'coordinator'];
-  }
-  
-  // Suggest additional skills based on weaknesses
-  if (!hardLower || hardLower.length < 3) {
-    suggestedSkills.push('technical skills', 'digital literacy');
-  }
-  if (!softLower || softLower.length < 3) {
-    suggestedSkills.push('communication', 'problem-solving');
-  }
-  
-  // Build the response
-  let response = 'Berdasarkan profil danminat Anda, berikut beberapa rekomendasi pekerjaan yang sesuai dengan kemampuan Anda:\n\n';
-  
-  // Add specific job recommendations
-  const uniqueJobs = [...new Set(jobRecommendations)];
-  response += '• ' + uniqueJobs.slice(0, 5).join('\n• ') + '\n\n';
-  
-  // Add suggested skills to develop
-  if (suggestedSkills.length > 0) {
-    response += 'Untuk memperkuat peluang kerja, pertimbangkan untuk mengembangkan skill berikut:\n';
-    response += '• ' + suggestedSkills.join('\n• ') + '\n';
-  }
-  
-  return response;
-}
-```
-
-I'm matching both hard and soft skills to filter through job categories, then deduplicating the results. If nothing matches, I provide general options. I also check if either skill set is empty or too short to recommend specific developmental skills to fill those gaps.
-</think>```javascript
-function generateAIDiscussionText(data) {
-  const opening = randomChoice([
-    'Saya lihat kamu sedang menjalani proses penting.',
-    'Menarik, kamu sudah punya gambaran yang kuat.',
-    'Kalau dilihat dari jawabanmu, ini bisa jadi titik awal yang baik.',
-    'Respons kamu terasa nyata dan penuh energi.'
-  ]);
-  const insight = simplifyText(data.insight, 24);
-  const hardSkill = simplifyText(data.hard_skill, 18);
-  const softSkill = simplifyText(data.soft_skill, 18);
-  const target = simplifyText(data.target, 22);
-
-  return `${opening} Insight utama kamu adalah ${insight}. Kamu ingin mengasah hard skill seperti ${hardSkill} dan soft skill seperti ${softSkill}. Target yang kamu tentukan adalah ${target}. Kalau kamu terus konsisten, ini bisa jadi pondasi yang kuat untuk langkah selanjutnya.`;
-}
-
 function generateAIReply(question, data) {
 
   const q = question.toLowerCase();
@@ -906,6 +795,162 @@ Daripada hanya melihat teori, akan lebih bagus jika langsung mencoba membuat pro
 `Sebenarnya kamu tidak perlu menunggu ahli untuk mulai berkembang.
 
 Di tahap sekarang, yang lebih penting adalah terus mencoba dan membiasakan diri menghadapi proses belajar ${hard}.`
+
+    ]);
+  }
+
+  // =========================
+  // SOFT SKILL
+  // =========================
+  if (
+    q.includes('soft') ||
+    q.includes('komunikasi') ||
+    q.includes('public speaking') ||
+    q.includes('tim') ||
+    q.includes('percaya diri')
+  ) {
+
+    return pick([
+
+`Soft skill seperti ${soft} berkembang lewat pengalaman langsung.
+
+Semakin sering kamu mencoba berinteraksi, berdiskusi, atau menyampaikan pendapat, semakin kuat kemampuanmu terbentuk.`,
+
+`Agent Rise melihat bahwa kemampuan ${soft} sebenarnya tidak dibangun dalam sehari.
+
+Perkembangannya muncul dari kebiasaan kecil yang dilakukan terus menerus.`,
+
+`Kalau kamu ingin meningkatkan ${soft}, coba mulai dari lingkungan yang nyaman dulu.
+
+Tidak perlu langsung tampil besar. Yang penting kamu mulai membiasakan diri aktif berbicara dan terlibat.`,
+
+`Banyak orang berpikir percaya diri harus muncul dulu sebelum bertindak.
+
+Padahal biasanya rasa percaya diri muncul setelah seseorang mulai berani mencoba.`,
+
+`Dalam dunia kerja maupun organisasi, ${soft} sering menjadi pembeda utama.
+
+Karena itu penting untuk mulai melatih cara berpikir, komunikasi, dan kerja sama dari sekarang.`,
+
+`Agent Rise merasa kamu punya peluang berkembang lebih jauh jika terus melatih ${soft} secara konsisten dan tidak takut melakukan kesalahan kecil.`
+
+    ]);
+  }
+
+  // =========================
+  // TARGET / MASA DEPAN
+  // =========================
+  if (
+    q.includes('target') ||
+    q.includes('tujuan') ||
+    q.includes('masa depan') ||
+    q.includes('karir') ||
+    q.includes('cita')
+  ) {
+
+    return pick([
+
+`Target "${target}" sebenarnya sudah cukup bagus karena memiliki arah yang jelas.
+
+Sekarang fokus utamanya adalah membangun langkah kecil yang mendekatkanmu ke sana sedikit demi sedikit.`,
+
+`Agent Rise menyarankan agar target besar dibagi menjadi target mingguan dan bulanan.
+
+Dengan begitu prosesnya terasa lebih ringan dan progresmu lebih mudah dilihat.`,
+
+`Tidak apa kalau targetmu terasa masih jauh.
+
+Yang penting kamu tetap bergerak dan tidak berhenti hanya karena hasilnya belum terlihat cepat.`,
+
+`Kadang seseorang gagal bukan karena targetnya terlalu tinggi, tetapi karena berhenti di tengah proses.
+
+Karena itu konsistensi jauh lebih penting dibanding kecepatan.`,
+
+`Masa depan yang baik biasanya dibangun dari kebiasaan kecil hari ini.
+
+Jadi jangan remehkan progres sederhana yang sedang kamu lakukan sekarang.`,
+
+`Agent Rise melihat bahwa kamu sebenarnya sudah punya arah yang cukup kuat.
+
+Sekarang tinggal bagaimana kamu menjaga semangat dan disiplin agar tujuan itu benar-benar tercapai.`
+
+    ]);
+  }
+
+  // =========================
+  // MOTIVASI
+  // =========================
+  if (
+    q.includes('capek') ||
+    q.includes('lelah') ||
+    q.includes('malas') ||
+    q.includes('gagal') ||
+    q.includes('down') ||
+    q.includes('bingung')
+  ) {
+
+    return pick([
+
+`Agent Rise paham bahwa fase seperti ini memang tidak mudah.
+
+Kadang seseorang merasa lelah bukan karena tidak mampu, tetapi karena terlalu lama memikirkan semuanya sendirian.`,
+
+`Tidak apa merasa capek.
+
+Yang penting jangan menyerah sepenuhnya. Istirahat sebentar boleh, lalu lanjut lagi perlahan.`,
+
+`Kegagalan sebenarnya bukan akhir dari proses berkembang.
+
+Sering kali justru dari fase itulah seseorang mulai mengenal dirinya lebih dalam.`,
+
+`Kalau sekarang terasa berat, coba fokus pada satu langkah kecil dulu.
+
+Tidak perlu memikirkan semuanya sekaligus.`,
+
+`Agent Rise melihat bahwa kamu masih punya keinginan untuk berkembang.
+
+Dan itu sudah menjadi tanda bahwa kamu belum benar-benar berhenti.`,
+
+`Kadang kita terlalu keras pada diri sendiri karena ingin cepat berhasil.
+
+Padahal proses berkembang memang membutuhkan waktu dan pengulangan.`
+
+    ]);
+  }
+
+  // =========================
+  // INSIGHT / POTENSI
+  // =========================
+  if (
+    q.includes('insight') ||
+    q.includes('potensi') ||
+    q.includes('diri') ||
+    q.includes('kelebihan')
+  ) {
+
+    return pick([
+
+`Dari jawabanmu, terlihat bahwa kamu cukup sadar terhadap kondisi dan potensi dirimu sendiri.
+
+Kesadaran seperti itu sangat penting dalam proses berkembang.`,
+
+`Agent Rise melihat bahwa kamu sebenarnya punya pemikiran yang cukup matang.
+
+Sekarang tinggal bagaimana kamu mengubah pemikiran itu menjadi tindakan nyata.`,
+
+`Mengenali diri sendiri adalah langkah awal yang sering dilewatkan banyak orang.
+
+Karena itu insight yang kamu miliki sekarang sebenarnya cukup berharga.`,
+
+`Potensi tidak selalu langsung terlihat besar di awal.
+
+Kadang seseorang baru menyadari kekuatannya setelah terus mencoba dalam proses yang panjang.`,
+
+`Agent Rise merasa kamu punya arah yang cukup baik.
+
+Sekarang fokusnya adalah menjaga konsistensi dan terus belajar dari pengalaman.`,
+
+`Cara kamu memahami dirimu sendiri menunjukkan bahwa kamu sedang berada dalam proses bertumbuh yang baik.`
 
     ]);
   }
