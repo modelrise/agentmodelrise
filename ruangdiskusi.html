@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RISE - Ruang Diskusi Saya</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <!-- Memuat library html2pdf dari CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; margin: 0; background: url('bg1.png') no-repeat center center fixed; background-size: cover; }
+    .overlay { position: relative; min-height: 100vh; width: 100%; background: linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(49, 46, 129, 0.9) 100%); padding-top: 80px; padding-bottom: 40px; }
+    .card-glass { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15); }
+    .fade-in { animation: fadeIn 0.5s ease-out; }
+    
+    /* Style Wrapper PDF (Hidden) */
+    #pdf-render-container {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: 210mm;
+      background: white;
+      padding: 20mm; /* Standar margin Word */
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      color: #111827;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex-shrink-0">
+          <a href="index.html" class="text-2xl font-black text-blue-600">RISE <span class="text-gray-700">| Langkah Awal</span></a>
+        </div>
+        <div class="hidden md:flex items-center gap-4">
+          <span class="text-gray-500 text-sm">Hai, <span id="username-display" class="font-semibold text-indigo-600"></span></span>
+          <a href="rise-form.html" class="bg-blue-600 text-white px-6 py-2.5 rounded-full text-base font-semibold hover:bg-blue-700 transition shadow-lg">Isi RISE</a>
+          <a href="login.html" class="logout-btn text-red-600 px-4 py-2 rounded-full text-base font-semibold hover:bg-red-50 transition">Logout</a>
+        </div>
+        <div class="md:hidden">
+          <button id="mobile-menu-btn" class="text-gray-700 p-2 rounded-md hover:bg-gray-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+      <div class="px-4 py-4 space-y-3">
+        <a href="rise-form.html" class="block w-full bg-blue-600 text-white px-6 py-3 rounded-full text-center">Isi RISE</a>
+        <a href="login.html" class="logout-btn block w-full text-red-600 px-6 py-3 rounded-full text-center">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- RUANG DISKUSI -->
+  <div class="overlay px-4">
+    <div class="max-w-5xl mx-auto">
+      
+      <!-- JUDUL -->
+      <div class="text-center mb-10">
+        <h1 class="text-4xl md:text-5xl font-black mb-3 text-white">Ruang Diskusi Saya</h1>
+        <p class="text-indigo-200 text-lg">Journal perjalanan RISE mu</p>
+        <div class="mt-4 inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full">
+          <span class="text-white font-semibold" id="total-diskusi">0</span>
+          <span class="text-indigo-200">Diskusi</span>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading" class="text-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+        <p class="text-indigo-200">Memuat...</p>
+      </div>
+
+      <!-- Container Diskusi -->
+      <div id="diskusi-container" class="grid gap-6 hidden"></div>
+
+      <!-- Jika Kosong -->
+      <div id="empty-state" class="text-center py-20 hidden">
+        <div class="bg-white/10 rounded-full p-8 inline-block mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2l3.293-3.293a2 2 0 112.828 2.828z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-2">Belum ada diskusi</h3>
+        <p class="text-indigo-200 mb-6">Mulai journey RISE mu sekarang!</p>
+        <a href="rise-form.html" class="inline-block bg-blue-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-600 transition">Isi RISE Sekarang</a>
+      </div>
+
+      <!-- Tombol Baru -->
+      <div class="text-center mt-10">
+        <a href="rise-form.html" class="inline-flex items-center gap-2 bg-white text-indigo-900 px-8 py-4 rounded-full font-bold hover:bg-indigo-50 transition shadow-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Tambah Diskusi Baru
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Script Load Data -->
+  <script>
+    // CEK LOGIN
+    const session = localStorage.getItem('rise_session');
+    if (!session) {
+      window.location.href = 'login.html';
+    }
+
+    // Tampilkan username
+    document.getElementById('username-display').textContent = session;
+
+    // Load data
+    document.addEventListener('DOMContentLoaded', loadDiskusi);
+
+    function loadDiskusi() {
+      const allData = JSON.parse(localStorage.getItem('rise_diskusi_' + session) || '[]');
+      const container = document.getElementById('diskusi-container');
+      const loading = document.getElementById('loading');
+      const empty = document.getElementById('empty-state');
+
+      document.getElementById('total-diskusi').textContent = allData.length;
+
+      loading.classList.add('hidden');
+
+      if (allData.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+
+      // Urutkan: terbaru dulu
+      allData.reverse().forEach((data, index) => {
+        const card = document.createElement('div');
+        card.className = 'card-glass rounded-2xl p-6 card-hover fade-in';
+        card.style.animationDelay = `${index * 0.1}s`;
+        
+        card.innerHTML = `
+          <!-- Header -->
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="text-lg font-bold text-indigo-900">${data.identitas?.nama || session}</h3>
+              <p class="text-sm text-gray-500">${data.identitas?.kampus || '-'} • ${data.identitas?.prodi || '-'}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-gray-400">${formatWaktu(new Date(data.timestamp))}</p>
+            </div>
+          </div>
+
+          <!-- 4 Tahapan -->
+          <div class="grid gap-4">
+            <!-- Reality -->
+            <div class="bg-red-50 rounded-xl p-4 border-l-4 border-red-400">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="bg-red-400 text-white text-xs font-bold px-2 py-1 rounded">R</span>
+                <span class="font-semibold text-red-700">Reality</span>
+              </div>
+              <p class="text-gray-700 text-sm">${data.reality}</p>
+            </div>
+
+            <!-- Insight -->
+            <div class="bg-blue-50 rounded-xl p-4 border-l-4 border-blue-400">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="bg-blue-400 text-white text-xs font-bold px-2 py-1 rounded">I</span>
+                <span class="font-semibold text-blue-700">Insight</span>
+              </div>
+              <p class="text-gray-700 text-sm">${data.insight}</p>
+            </div>
+
+            <!-- Skill -->
+            <div class="bg-green-50 rounded-xl p-4 border-l-4 border-green-400">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="bg-green-400 text-white text-xs font-bold px-2 py-1 rounded">S</span>
+                <span class="font-semibold text-green-700">Skill</span>
+              </div>
+              <p class="text-gray-700 text-sm"><strong>Hard:</strong> ${data.hard_skill}</p>
+              <p class="text-gray-700 text-sm"><strong>Soft:</strong> ${data.soft_skill}</p>
+            </div>
+
+            <!-- Expectation -->
+            <div class="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-400">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="bg-purple-400 text-white text-xs font-bold px-2 py-1 rounded">E</span>
+                <span class="font-semibold text-purple-700">Expectation</span>
+              </div>
+              <p class="text-gray-700 text-sm">${data.target}</p>
+            </div>
+          </div>
+
+          <!-- AI Ringkasan & Chat -->
+          <div class="mt-4 pt-4 border-t border-gray-100">
+            <button onclick="toggleAiSummary(this)" class="inline-flex items-center gap-2 text-sm text-indigo-700 hover:text-indigo-900 transition font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16h6M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
+              </svg>
+              <span>Ringkas & Diskusi AI</span>
+            </button>
+            <div class="ai-panel hidden mt-4 rounded-2xl bg-slate-50 p-4 border border-slate-200">
+              <div class="ai-summary text-sm text-slate-700"></div>
+              <div class="ai-chat-history max-h-52 overflow-y-auto space-y-3 mt-4"></div>
+              <div class="ai-response hidden mt-4 p-4 bg-white border border-slate-200 rounded-xl text-sm text-slate-700"></div>
+              <div class="mt-4 grid gap-3">
+                <textarea rows="2" placeholder="Tanyakan ke asisten AI ..." class="ai-question w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-300 focus:outline-none"></textarea>
+                <button onclick="sendAiReply(this)" class="w-full inline-flex justify-center items-center gap-2 rounded-full bg-indigo-600 text-white px-4 py-3 text-sm font-semibold hover:bg-indigo-700 transition">
+                  Jawab AI
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tombol PDF -->
+          <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+            <button onclick="downloadPDF(this)" class="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download PDF
+            </button>
+          </div>
+        `;
+
+        card.dataset.riseData = JSON.stringify(data);
+        container.appendChild(card);
+      });
+    }
+
+    function formatWaktu(date) {
+      const now = new Date();
+      const diff = now - date;
+      const menit = Math.floor(diff / 60000);
+      const jam = Math.floor(diff / 3600000);
+      const hari = Math.floor(diff / 86400000);
+
+      if (menit < 1) return 'Baru saja';
+      if (menit < 60) return `${menit} menit yang lalu`;
+      if (jam < 24) return `${jam} jam yang lalu`;
+      return `${hari} hari yang lalu`;
+    }
+
+function downloadPDF(btn) {
+  const card = btn.closest('.card-glass');
+
+  const originalData = JSON.parse(card.dataset.riseData || '{}');
+
+  const dataView = {
+    nama: card.querySelector('h3')?.innerText || session,
+    subtitle: card.querySelector('p')?.innerText || '',
+    time: card.querySelector('.text-xs')?.innerText || '',
+    sections: card.querySelectorAll('.grid > div'),
+    aiChat: originalData.ai_chat || []
+  };
+
+  // =========================
+  // WRAPPER PDF A4
+  // =========================
+  const wrapper = document.createElement('div');
+
+  wrapper.style.width = '210mm';
+  wrapper.style.background = '#ffffff';
+
+  // PERBAIKAN:
+  // supaya halaman pertama full dari atas
+  wrapper.style.padding = '10mm 16mm';
+
+  wrapper.style.boxSizing = 'border-box';
+  wrapper.style.fontFamily = 'Inter, sans-serif';
+  wrapper.style.color = '#111827';
+
+  // =========================
+  // HEADER
+  // =========================
+  const header = document.createElement('div');
+
+  header.style.display = 'flex';
+  header.style.justifyContent = 'space-between';
+  header.style.alignItems = 'flex-start';
+
+  // PERBAIKAN:
+  // kecilkan jarak bawah
+  header.style.paddingBottom = '10px';
+
+  header.style.borderBottom = '1px solid #312e81';
+
+  // PERBAIKAN:
+  // jangan terlalu turun
+  header.style.marginBottom = '18px';
+
+  header.innerHTML = `
+    <div>
+      <div style="
+        font-size: 32px;
+        font-weight: 900;
+        color: #1e1b4b;
+        letter-spacing: -1px;
+        margin-bottom: 2px;
+      ">
+        RISE | Langkah Awal
+      </div>
+
+      <div style="
+        font-size: 14px;
+        color: #6b7280;
+      ">
+        Ringkasan Rencana & Diskusi
+      </div>
+    </div>
+
+    <div style="
+      text-align: right;
+    ">
+      <div style="
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e1b4b;
+        margin-bottom: 4px;
+      ">
+        ${session}
+      </div>
+
+      <div style="
+        font-size: 13px;
+        color: #6b7280;
+      ">
+        ${new Date().toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })}
+      </div>
+    </div>
+  `;
+
+  wrapper.appendChild(header);
+
+  // =========================
+  // MAIN CARD
+  // =========================
+  const mainCard = document.createElement('div');
+
+  mainCard.style.border = '1px solid #eeeeee';
+  mainCard.style.borderRadius = '22px';
+  mainCard.style.padding = '28px';
+  mainCard.style.background = '#ffffff';
+  mainCard.style.boxShadow = '0 2px 10px rgba(0,0,0,0.03)';
+
+  // =========================
+  // USER INFO
+  // =========================
+  const topInfo = document.createElement('div');
+
+  topInfo.style.display = 'flex';
+  topInfo.style.justifyContent = 'space-between';
+  topInfo.style.marginBottom = '24px';
+
+  topInfo.innerHTML = `
+    <div>
+      <div style="
+        font-size: 24px;
+        font-weight: 800;
+        color: #1e1b4b;
+        margin-bottom: 4px;
+      ">
+        ${dataView.nama}
+      </div>
+
+      <div style="
+        font-size: 14px;
+        color: #6b7280;
+      ">
+        ${dataView.subtitle}
+      </div>
+    </div>
+
+    <div style="
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 5px;
+    ">
+      ${dataView.time}
+    </div>
+  `;
+
+  mainCard.appendChild(topInfo);
+
+  // =========================
+  // CONFIG SECTION
+  // =========================
+  const configs = [
+    {
+      title: 'Reality',
+      icon: 'R',
+      bg: '#fff5f5',
+      border: '#ff8b8b',
+      text: '#ef4444'
+    },
+    {
+      title: 'Insight',
+      icon: 'I',
+      bg: '#f3f7ff',
+      border: '#6ea8ff',
+      text: '#3b82f6'
+    },
+    {
+      title: 'Skill',
+      icon: 'S',
+      bg: '#f3fff7',
+      border: '#56d48b',
+      text: '#22c55e'
+    },
+    {
+      title: 'Expectation',
+      icon: 'E',
+      bg: '#faf5ff',
+      border: '#c084fc',
+      text: '#9333ea'
+    }
+  ];
+
+  dataView.sections.forEach((section, i) => {
+    const config = configs[i];
+
+    const box = document.createElement('div');
+
+    box.style.background = config.bg;
+    box.style.borderLeft = `4px solid ${config.border}`;
+    box.style.borderRadius = '18px';
+    box.style.padding = '20px';
+    box.style.marginBottom = '18px';
+    box.style.pageBreakInside = 'avoid';
+
+    const texts = section.querySelectorAll('p');
+
+    let contentHTML = '';
+
+    texts.forEach(p => {
+      contentHTML += `
+        <div style="
+          font-size: 15px;
+          color: #4b5563;
+          line-height: 1.8;
+          margin-top: 4px;
+        ">
+          ${p.innerHTML}
+        </div>
+      `;
+    });
+
+    box.innerHTML = `
+      <div style="
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      ">
+
+        <div style="
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          background: ${config.border};
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 13px;
+          font-weight: 700;
+        ">
+          ${config.icon}
+        </div>
+
+        <div style="
+          font-size: 20px;
+          font-weight: 700;
+          color: ${config.text};
+        ">
+          ${config.title}
+        </div>
+
+      </div>
+
+      ${contentHTML}
+    `;
+
+    mainCard.appendChild(box);
+  });
+
+  wrapper.appendChild(mainCard);
+
+  // =========================
+  // FULL CHAT AI
+  // =========================
+  if (dataView.aiChat.length > 0) {
+
+    const chatSection = document.createElement('div');
+
+    chatSection.style.background = '#f8fafc';
+    chatSection.style.border = '1px solid #e2e8f0';
+    chatSection.style.borderRadius = '18px';
+    chatSection.style.padding = '22px';
+    chatSection.style.marginTop = '18px';
+
+    // PENTING:
+    // supaya seluruh chat bisa lanjut ke halaman berikutnya
+    chatSection.style.pageBreakInside = 'auto';
+
+    let chatHtml = `
+      <div style="
+        font-size: 22px;
+        font-weight: 800;
+        color: #1e40af;
+        margin-bottom: 20px;
+      ">
+        Diskusi AI
+      </div>
+    `;
+
+    dataView.aiChat.forEach(msg => {
+
+      const isUser = msg.sender === 'user';
+
+      chatHtml += `
+        <div style="
+          margin-bottom: 16px;
+          padding: 14px;
+          border-radius: 14px;
+          background: ${isUser ? '#eff6ff' : '#ffffff'};
+          border: 1px solid ${isUser ? '#bfdbfe' : '#e2e8f0'};
+        ">
+
+          <div style="
+            font-size: 13px;
+            font-weight: 700;
+            color: ${isUser ? '#1d4ed8' : '#0f172a'};
+            margin-bottom: 8px;
+          ">
+            ${isUser ? 'Kamu' : 'AI Asisten'}
+            ${msg.time ? `• ${msg.time}` : ''}
+          </div>
+
+          <div style="
+            font-size: 14px;
+            color: #334155;
+            line-height: 1.9;
+            white-space: pre-wrap;
+            word-break: break-word;
+          ">
+            ${msg.text}
+          </div>
+
+        </div>
+      `;
+    });
+
+    chatSection.innerHTML = chatHtml;
+
+    wrapper.appendChild(chatSection);
+  }
+
+  // =========================
+  // APPEND
+  // =========================
+  document.body.appendChild(wrapper);
+
+  // =========================
+  // PDF CONFIG
+  // =========================
+  const opt = {
+    margin: 0,
+    filename: `RISE-${session}-${Date.now()}.pdf`,
+    image: {
+      type: 'jpeg',
+      quality: 1
+    },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      logging: false
+    },
+    jsPDF: {
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait'
+    }
+  };
+
+  html2pdf()
+    .set(opt)
+    .from(wrapper)
+    .save()
+    .then(() => {
+      document.body.removeChild(wrapper);
+    });
+}
+function toggleAiSummary(btn) {
+  const card = btn.closest('.card-glass');
+  const panel = card.querySelector('.ai-panel');
+  const label = btn.querySelector('span');
+  const response = card.querySelector('.ai-response');
+
+  if (!panel) return;
+
+  if (panel.classList.contains('hidden')) {
+    const data = JSON.parse(card.dataset.riseData || '{}');
+    const summaryText = generateAIDiscussionText(data);
+    panel.querySelector('.ai-summary').textContent = summaryText;
+    renderAiChatHistory(card, data);
+    response.classList.add('hidden');
+    panel.classList.remove('hidden');
+    if (label) label.textContent = 'Sembunyikan Ringkasan AI';
+  } else {
+    panel.classList.add('hidden');
+    if (label) label.textContent = 'Ringkas & Diskusi AI';
+  }
+}
+
+function sendAiReply(btn) {
+  const card = btn.closest('.card-glass');
+  const questionInput = card.querySelector('.ai-question');
+  const response = card.querySelector('.ai-response');
+  const data = JSON.parse(card.dataset.riseData || '{}');
+  const question = questionInput?.value.trim();
+
+  if (!question) {
+    response.textContent = 'Silakan tulis pertanyaanmu terlebih dahulu agar asisten AI bisa membantu.';
+    response.classList.remove('hidden');
+    return;
+  }
+
+  const dailyState = loadDailyAiState();
+  if (dailyState.count >= 10) {
+    response.textContent = 'Maaf, kamu sudah mencapai batas 10 pesan AI hari ini. Coba lagi besok ya!';
+    response.classList.remove('hidden');
+    return;
+  }
+
+  const aiAnswer = generateAIReply(question, data);
+  const timestamp = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  data.ai_chat = data.ai_chat || [];
+  data.ai_chat.push({ sender: 'user', text: question, time: timestamp });
+  data.ai_chat.push({ sender: 'ai', text: aiAnswer, time: timestamp });
+  card.dataset.riseData = JSON.stringify(data);
+  saveAiChatData(data);
+  incrementDailyAiCount();
+
+  response.textContent = aiAnswer;
+  response.classList.remove('hidden');
+  questionInput.value = '';
+  renderAiChatHistory(card, data);
+}
+
+function renderAiChatHistory(card, data) {
+  const history = card.querySelector('.ai-chat-history');
+  if (!history) return;
+
+  const messages = data.ai_chat || [];
+  if (messages.length === 0) {
+    history.innerHTML = '<p class="text-sm text-slate-500">Belum ada percakapan. Tanyakan sesuatu untuk memulai.</p>';
+    return;
+  }
+
+  history.innerHTML = messages.map(msg => {
+    const isUser = msg.sender === 'user';
+    const bubbleColor = isUser ? 'bg-indigo-600 text-white' : 'bg-white text-slate-800 border border-slate-200';
+    const alignClass = isUser ? 'justify-end' : 'justify-start';
+
+    return `
+      <div class="flex ${alignClass}">
+        <div class="max-w-[90%] rounded-2xl p-3 ${bubbleColor} shadow-sm">
+          <div class="text-xs font-semibold ${isUser ? 'text-indigo-100' : 'text-slate-500'} mb-1">
+            ${isUser ? 'Kamu' : 'AI Asisten'} • ${msg.time || ''}
+          </div>
+          <div class="text-sm leading-6">${msg.text}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  history.scrollTop = history.scrollHeight;
+}
+
+function saveAiChatData(data) {
+  const key = 'rise_diskusi_' + session;
+  const allData = JSON.parse(localStorage.getItem(key) || '[]');
+  const index = allData.findIndex(item => item.timestamp === data.timestamp);
+  if (index !== -1) {
+    allData[index] = data;
+  } else {
+    allData.push(data);
+  }
+  localStorage.setItem(key, JSON.stringify(allData));
+}
+
+function getAiDailyKey() {
+  return 'rise_ai_limit_' + session;
+}
+
+function loadDailyAiState() {
+  const saved = JSON.parse(localStorage.getItem(getAiDailyKey()) || '{}');
+  const today = new Date().toISOString().slice(0, 10);
+  if (saved.date !== today) {
+    return { date: today, count: 0 };
+  }
+  return saved;
+}
+
+function saveDailyAiState(state) {
+  localStorage.setItem(getAiDailyKey(), JSON.stringify(state));
+}
+
+function incrementDailyAiCount() {
+  const state = loadDailyAiState();
+  state.count = (state.count || 0) + 1;
+  saveDailyAiState(state);
+  return state.count;
+}
+
+function randomChoice(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function generateAIDiscussionText(data) {
+  const opening = randomChoice([
+    'Saya lihat kamu sedang menjalani proses penting.',
+    'Menarik, kamu sudah punya gambaran yang kuat.',
+    'Kalau dilihat dari jawabanmu, ini bisa jadi titik awal yang baik.',
+    'Respons kamu terasa nyata dan penuh energi.'
+  ]);
+  const insight = simplifyText(data.insight, 24);
+  const hardSkill = simplifyText(data.hard_skill, 18);
+  const softSkill = simplifyText(data.soft_skill, 18);
+  const target = simplifyText(data.target, 22);
+
+  return `${opening} Insight utama kamu adalah ${insight}. Kamu ingin mengasah hard skill seperti ${hardSkill} dan soft skill seperti ${softSkill}. Target yang kamu tentukan adalah ${target}. Kalau kamu terus konsisten, ini bisa jadi pondasi yang kuat untuk langkah selanjutnya.`;
+}
+
+function generateAIReply(question, data) {
+
+  const q = question.toLowerCase();
+
+  const hard = data.hard_skill || 'skill teknis';
+  const soft = data.soft_skill || 'skill interpersonal';
+  const target = data.target || 'tujuanmu';
+  const insight = data.insight || '';
+  const reality = data.reality || '';
+
+  function pick(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  // =========================
+  // HARD SKILL
+  // =========================
+  if (
+    q.includes('hard') ||
+    q.includes('skill') ||
+    q.includes('belajar') ||
+    q.includes('latihan') ||
+    q.includes('coding') ||
+    q.includes('desain')
+  ) {
+
+    return pick([
+
+`Menurut Agent Rise, perkembangan ${hard} tidak harus langsung besar dalam satu hari.
+
+Yang penting adalah konsisten. Bahkan progres kecil yang dilakukan terus menerus akan jauh lebih terasa dibanding semangat besar yang hanya bertahan sebentar.`,
+
+`Kalau kamu ingin berkembang di ${hard}, coba fokus pada satu kemampuan spesifik terlebih dahulu.
+
+Jangan belajar terlalu banyak hal sekaligus karena biasanya justru membuat cepat lelah dan kehilangan arah.`,
+
+`Agent Rise melihat kamu punya potensi berkembang di bidang ${hard}.
+
+Sekarang tinggal bagaimana kamu membangun kebiasaan latihan yang stabil dan realistis untuk dijalani setiap hari.`,
+
+`Belajar ${hard} memang kadang terasa lambat di awal.
+
+Namun biasanya hasil mulai terlihat ketika seseorang sudah melewati fase bosan dan tetap melanjutkan prosesnya.`,
+
+`Coba ubah cara belajarmu menjadi lebih praktis.
+
+Daripada hanya melihat teori, akan lebih bagus jika langsung mencoba membuat project kecil agar kemampuan ${hard} lebih cepat berkembang.`,
+
+`Sebenarnya kamu tidak perlu menunggu ahli untuk mulai berkembang.
+
+Di tahap sekarang, yang lebih penting adalah terus mencoba dan membiasakan diri menghadapi proses belajar ${hard}.`
+
+    ]);
+  }
+
+  // =========================
+  // SOFT SKILL
+  // =========================
+  if (
+    q.includes('soft') ||
+    q.includes('komunikasi') ||
+    q.includes('public speaking') ||
+    q.includes('tim') ||
+    q.includes('percaya diri')
+  ) {
+
+    return pick([
+
+`Soft skill seperti ${soft} berkembang lewat pengalaman langsung.
+
+Semakin sering kamu mencoba berinteraksi, berdiskusi, atau menyampaikan pendapat, semakin kuat kemampuanmu terbentuk.`,
+
+`Agent Rise melihat bahwa kemampuan ${soft} sebenarnya tidak dibangun dalam sehari.
+
+Perkembangannya muncul dari kebiasaan kecil yang dilakukan terus menerus.`,
+
+`Kalau kamu ingin meningkatkan ${soft}, coba mulai dari lingkungan yang nyaman dulu.
+
+Tidak perlu langsung tampil besar. Yang penting kamu mulai membiasakan diri aktif berbicara dan terlibat.`,
+
+`Banyak orang berpikir percaya diri harus muncul dulu sebelum bertindak.
+
+Padahal biasanya rasa percaya diri muncul setelah seseorang mulai berani mencoba.`,
+
+`Dalam dunia kerja maupun organisasi, ${soft} sering menjadi pembeda utama.
+
+Karena itu penting untuk mulai melatih cara berpikir, komunikasi, dan kerja sama dari sekarang.`,
+
+`Agent Rise merasa kamu punya peluang berkembang lebih jauh jika terus melatih ${soft} secara konsisten dan tidak takut melakukan kesalahan kecil.`
+
+    ]);
+  }
+
+  // =========================
+  // TARGET / MASA DEPAN
+  // =========================
+  if (
+    q.includes('target') ||
+    q.includes('tujuan') ||
+    q.includes('masa depan') ||
+    q.includes('karir') ||
+    q.includes('cita')
+  ) {
+
+    return pick([
+
+`Target "${target}" sebenarnya sudah cukup bagus karena memiliki arah yang jelas.
+
+Sekarang fokus utamanya adalah membangun langkah kecil yang mendekatkanmu ke sana sedikit demi sedikit.`,
+
+`Agent Rise menyarankan agar target besar dibagi menjadi target mingguan dan bulanan.
+
+Dengan begitu prosesnya terasa lebih ringan dan progresmu lebih mudah dilihat.`,
+
+`Tidak apa kalau targetmu terasa masih jauh.
+
+Yang penting kamu tetap bergerak dan tidak berhenti hanya karena hasilnya belum terlihat cepat.`,
+
+`Kadang seseorang gagal bukan karena targetnya terlalu tinggi, tetapi karena berhenti di tengah proses.
+
+Karena itu konsistensi jauh lebih penting dibanding kecepatan.`,
+
+`Masa depan yang baik biasanya dibangun dari kebiasaan kecil hari ini.
+
+Jadi jangan remehkan progres sederhana yang sedang kamu lakukan sekarang.`,
+
+`Agent Rise melihat bahwa kamu sebenarnya sudah punya arah yang cukup kuat.
+
+Sekarang tinggal bagaimana kamu menjaga semangat dan disiplin agar tujuan itu benar-benar tercapai.`
+
+    ]);
+  }
+
+  // =========================
+  // MOTIVASI
+  // =========================
+  if (
+    q.includes('capek') ||
+    q.includes('lelah') ||
+    q.includes('malas') ||
+    q.includes('gagal') ||
+    q.includes('down') ||
+    q.includes('bingung')
+  ) {
+
+    return pick([
+
+`Agent Rise paham bahwa fase seperti ini memang tidak mudah.
+
+Kadang seseorang merasa lelah bukan karena tidak mampu, tetapi karena terlalu lama memikirkan semuanya sendirian.`,
+
+`Tidak apa merasa capek.
+
+Yang penting jangan menyerah sepenuhnya. Istirahat sebentar boleh, lalu lanjut lagi perlahan.`,
+
+`Kegagalan sebenarnya bukan akhir dari proses berkembang.
+
+Sering kali justru dari fase itulah seseorang mulai mengenal dirinya lebih dalam.`,
+
+`Kalau sekarang terasa berat, coba fokus pada satu langkah kecil dulu.
+
+Tidak perlu memikirkan semuanya sekaligus.`,
+
+`Agent Rise melihat bahwa kamu masih punya keinginan untuk berkembang.
+
+Dan itu sudah menjadi tanda bahwa kamu belum benar-benar berhenti.`,
+
+`Kadang kita terlalu keras pada diri sendiri karena ingin cepat berhasil.
+
+Padahal proses berkembang memang membutuhkan waktu dan pengulangan.`
+
+    ]);
+  }
+
+  // =========================
+  // INSIGHT / POTENSI
+  // =========================
+  if (
+    q.includes('insight') ||
+    q.includes('potensi') ||
+    q.includes('diri') ||
+    q.includes('kelebihan')
+  ) {
+
+    return pick([
+
+`Dari jawabanmu, terlihat bahwa kamu cukup sadar terhadap kondisi dan potensi dirimu sendiri.
+
+Kesadaran seperti itu sangat penting dalam proses berkembang.`,
+
+`Agent Rise melihat bahwa kamu sebenarnya punya pemikiran yang cukup matang.
+
+Sekarang tinggal bagaimana kamu mengubah pemikiran itu menjadi tindakan nyata.`,
+
+`Mengenali diri sendiri adalah langkah awal yang sering dilewatkan banyak orang.
+
+Karena itu insight yang kamu miliki sekarang sebenarnya cukup berharga.`,
+
+`Potensi tidak selalu langsung terlihat besar di awal.
+
+Kadang seseorang baru menyadari kekuatannya setelah terus mencoba dalam proses yang panjang.`,
+
+`Agent Rise merasa kamu punya arah yang cukup baik.
+
+Sekarang fokusnya adalah menjaga konsistensi dan terus belajar dari pengalaman.`,
+
+`Cara kamu memahami dirimu sendiri menunjukkan bahwa kamu sedang berada dalam proses bertumbuh yang baik.`
+
+    ]);
+  }
+
+  // =========================
+  // BAGAIMANA / CARA
+  // =========================
+  if (
+    q.includes('bagaimana') ||
+    q.includes('gimana') ||
+    q.includes('cara')
+  ) {
+
+    return pick([
+
+`Menurut Agent Rise, langkah terbaik adalah mulai dari versi paling sederhana terlebih dahulu.
+
+Tidak perlu langsung sempurna.`,
+
+`Coba fokus pada satu tindakan kecil yang bisa langsung kamu lakukan hari ini.
+
+Dari situ biasanya momentum mulai terbentuk.`,
+
+`Kalau masih bingung harus mulai dari mana, pilih langkah yang paling realistis dulu.
+
+Yang penting bergerak.`,
+
+`Perubahan besar biasanya dimulai dari kebiasaan kecil yang dilakukan terus menerus.`,
+
+`Agent Rise menyarankan agar kamu tidak terlalu lama menunggu waktu yang ideal.
+
+Kadang progres justru muncul ketika seseorang mulai bertindak meski belum sepenuhnya siap.`,
+
+`Mulai perlahan saja.
+
+Karena proses yang stabil biasanya lebih bertahan dibanding semangat besar yang cepat hilang.`
+
+    ]);
+  }
+
+  // =========================
+  // KENAPA
+  // =========================
+  if (
+    q.includes('kenapa') ||
+    q.includes('mengapa')
+  ) {
+
+    return pick([
+
+`Pertanyaan seperti itu menunjukkan bahwa kamu sedang mencoba memahami dirimu lebih dalam.
+
+Dan itu sebenarnya hal yang baik.`,
+
+`Kadang seseorang merasa bingung bukan karena tidak punya tujuan, tetapi karena terlalu banyak hal dipikirkan sekaligus.`,
+
+`Agent Rise merasa pertanyaanmu cukup penting karena berkaitan dengan arah dan proses berkembangmu sendiri.`,
+
+`Tidak semua jawaban harus ditemukan dengan cepat.
+
+Kadang seseorang baru memahami dirinya setelah melewati beberapa proses kehidupan.`,
+
+`Mungkin sekarang kamu sedang berada di fase mencari makna dan arah yang paling sesuai untuk dirimu.`,
+
+`Pertanyaan "kenapa" biasanya muncul ketika seseorang sedang benar-benar memikirkan masa depannya secara serius.`
+
+    ]);
+  }
+
+  // =========================
+  // DEFAULT
+  // =========================
+  return pick([
+
+`Agent Rise melihat bahwa kamu sedang berada dalam proses berkembang yang cukup baik.
+
+Sekarang yang penting adalah tetap melangkah dan tidak berhenti di tengah jalan.`,
+
+`Dari jawaban RISE yang kamu isi, terlihat bahwa kamu sebenarnya sudah memiliki arah yang cukup jelas.
+
+Tinggal bagaimana kamu menjaga konsistensi dan keberanian untuk terus mencoba.`,
+
+`Tidak semua proses berkembang berjalan cepat.
+
+Namun setiap langkah kecil yang kamu lakukan tetap memiliki arti penting.`,
+
+`Agent Rise percaya bahwa perkembangan besar biasanya dimulai dari keputusan kecil yang dilakukan secara konsisten.`,
+
+`Kamu tidak harus langsung sempurna.
+
+Yang penting adalah tetap bertumbuh sedikit demi sedikit setiap harinya.`,
+
+`Perjalanan berkembang memang kadang melelahkan, tetapi proses itu juga yang membentuk seseorang menjadi lebih kuat.`
+
+  ]);
+}
+function simplifyText(text, maxWords) {
+  if (!text) return '';
+  const words = text.split(/\s+/).slice(0, maxWords);
+  return words.join(' ') + (words.length >= maxWords ? '...' : '');
+}
+
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    function attachLogout() {
+      const logoutLinks = document.querySelectorAll('.logout-btn');
+      logoutLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          localStorage.removeItem('rise_session');
+          window.location.href = 'login.html';
+        });
+      });
+    }
+
+    attachLogout();
+    mobileBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+  </script>
+
+</body>
+</html>
